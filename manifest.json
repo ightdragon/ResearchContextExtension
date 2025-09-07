@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Research Context Keeper",
+  "version": "1.2",
+  "description": "Append and maintain context while searching Google.",
+  "permissions": ["storage", "tabs", "webNavigation"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "omnibox": {
+    "keyword": "rc"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://www.google.com/search*"],
+      "js": ["content.js"]
+    }
+  ]
+}
