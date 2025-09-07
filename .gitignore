@@ -1,0 +1,6 @@
+# Ignore OS junk
+.DS_Store
+Thumbs.db
+
+# Ignore npm/node stuff (if you ever add tooling)
+node_modules/
