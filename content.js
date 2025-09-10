@@ -1,5 +1,5 @@
 chrome.storage.local.get({ context: "" }, (data) => {
-  if (data.context) {
+  /*if (data.context) {
     const banner = document.createElement("div");
     banner.innerHTML = `
       <span style="font-weight:bold;">Context:</span> ${data.context}
@@ -8,7 +8,7 @@ chrome.storage.local.get({ context: "" }, (data) => {
                border:none; border-radius:4px; cursor:pointer;">
         ✕
       </button>
-    `;
+    `;*/
 
     banner.style.cssText = `
       position: sticky;
@@ -27,6 +27,10 @@ chrome.storage.local.get({ context: "" }, (data) => {
 
     document.getElementById("dismissContextBanner").addEventListener("click", () => {
       banner.remove();
+      chrome.storage.local.clear(() => {
+        contextInput.value = "";
+        currentContext.textContent = "(none saved)";
+      });
     });
   }
 });

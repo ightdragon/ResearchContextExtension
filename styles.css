@@ -1,0 +1,96 @@
+body {
+  font-family: Arial, sans-serif;
+  padding: 12px;
+  width: 340px;
+  background: #ffffff;
+  color: #202124;
+}
+
+/* Headings */
+h2, h3 {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #202124;
+}
+
+/* Context input */
+textarea {
+  width: 100%;
+  height: 60px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  resize: none;
+}
+
+/* Buttons */
+button {
+  margin-right: 6px;
+  margin-top: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: #f1f3f4;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #e2e5e7;
+}
+
+/* Current context */
+#currentContext {
+  font-size: 14px;
+  margin: 6px 0;
+  color: #5f6368;
+}
+
+/* History list */
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  font-size: 13px;
+  margin: 4px 0;
+  padding: 4px;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+}
+
+li:hover {
+  background: #f8f9fa;
+}
+
+.delete-history {
+  float: right;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: #d93025; /* Google red */
+  cursor: pointer;
+  padding: 0;
+  margin-left: 8px;
+}
+
+.delete-history:hover {
+  color: #a50e0e;
+}
+
+.history-query {
+  display: inline-block;
+  margin-right: 10px;   /* ✅ space between query and timestamp */
+  font-weight: 500;
+  color: #202124;
+}
+
+.history-timestamp {
+  font-size: 12px;
+  color: #5f6368;
+}

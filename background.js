@@ -34,6 +34,7 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
 
 // Core query handler
 function handleQuery(query, forceAppend = false, tabId = null) {
+  console.log("handleQuery called with query:", query);
   chrome.storage.local.get({ context: "", queries: [] }, (data) => {
     const context = (data.context || "").trim();
     let modifiedQuery = query;
@@ -46,26 +47,37 @@ function handleQuery(query, forceAppend = false, tabId = null) {
 
     let queries = data.queries;
 
-    // ✅ Build new query entry
+    // New entry
     const newEntry = {
+      id: Date.now(),  // unique id
       rawQuery: query,
       fullQuery: modifiedQuery,
-      timestamp: new Date().toLocaleString()
+      timestamp: new Date().toLocaleString([], {
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit"
+      })
     };
 
-    // ✅ Prevent duplicates: check if fullQuery already exists as the last entry
+    // Prevent duplicate consecutive entries
     if (queries.length === 0 || queries[queries.length - 1].fullQuery !== newEntry.fullQuery) {
+      console.log("Saving to history:", newEntry);
+
       queries.push(newEntry);
 
-      // limit to 50
-      if (queries.length > 15) {
-        queries = queries.slice(-15);
+      // Keep only last 50
+      if (queries.length > 50) {
+        queries = queries.slice(-50);
       }
 
-      chrome.storage.local.set({ queries });
+      chrome.storage.local.set({ queries }, () => {
+        console.log("History updated. Total items:", queries.length);
+
+        console.log("Saved query:", newEntry.fullQuery);
+      });
     }
 
-    // redirect only if modified
+    // Redirect if query was modified
     if (modifiedQuery !== query) {
       const newUrl = `https://www.google.com/search?q=${encodeURIComponent(modifiedQuery)}`;
       if (tabId) {

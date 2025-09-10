@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Popup loaded ✅");
- 
+
   const list = document.getElementById("queryList");
   const contextInput = document.getElementById("contextInput");
   const saveButton = document.getElementById("saveContext");
@@ -10,39 +10,59 @@ document.addEventListener("DOMContentLoaded", () => {
   function loadData() {
     chrome.storage.local.get({ context: "", queries: [] }, (data) => {
       contextInput.value = data.context || "";
-      currentContext.textContent = data.context ? data.context : "(none saved)";
-      console.log("Stored queries:", data.queries);
-      // ✅ Always clear list before re-rendering
+      currentContext.textContent = data.context || "(none saved)";
+      console.log("Loaded context:", data.context);
+      console.log("Loaded queries:", data.queries);
+
+      // Clear history before re-render
       list.innerHTML = "";
 
-      // ✅ Reverse so newest appears first
-      [...data.queries].reverse().forEach(item => {
-        const li = document.createElement("li");
-        console.log("check")
-        li.innerHTML = `
-          <span class="history-query">${item.fullQuery}</span>
-          <small style="color:#777;">(${item.timestamp})</small>
-        `;
+      // Show newest first
+      [...data.queries].reverse().forEach((item) => {
+  const li = document.createElement("li");
 
-        li.style.cursor = "pointer";
-        li.title = "Click to re-run this exact query (with its original context)";
-        li.addEventListener("click", () => {
-          chrome.storage.local.set({ skipContextOnce: true }, () => {
-            const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(item.fullQuery)}`;
-            chrome.tabs.create({ url: searchUrl });
-          });
-        });
+  // inner wrapper for query + timestamp
+  const querySpan = document.createElement("span");
+  querySpan.className = "history-query";
+  querySpan.textContent = item.fullQuery;
 
-        list.appendChild(li);
-      });
+  const tsSpan = document.createElement("span");
+  tsSpan.className = "history-timestamp";
+  tsSpan.textContent = item.timestamp;
 
-      console.log("Rendered queries:", data.queries.length);
+  const deleteBtn = document.createElement("button");
+  deleteBtn.className = "delete-history";
+  deleteBtn.innerHTML = "&times;";
+
+  // ✅ Clicking the li (anywhere except delete button) re-runs query
+  li.addEventListener("click", () => {
+    chrome.storage.local.set({ skipContextOnce: true }, () => {
+      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(item.fullQuery)}`;
+      chrome.tabs.create({ url: searchUrl });
+    });
+  });
+
+  // ✅ Delete button removes entry without triggering li click
+  deleteBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    chrome.storage.local.get({ queries: [] }, (store) => {
+      const updated = store.queries.filter(q => q.id !== item.id);
+      chrome.storage.local.set({ queries: updated }, loadData);
+    });
+  });
+
+  li.appendChild(querySpan);
+  li.appendChild(tsSpan);
+  li.appendChild(deleteBtn);
+  list.appendChild(li);
+});
+
     });
   }
 
-  loadData(); // ✅ run once
+  loadData();
 
-  // Select all text when focusing context box
+  // Select all text on focus
   contextInput.addEventListener("focus", () => contextInput.select());
 
   // Enter saves context
@@ -53,13 +73,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Save context button
   saveButton.addEventListener("click", saveContext);
 
+  // Clear only context
   clearButton.addEventListener("click", () => {
-    chrome.storage.local.clear(() => {
+    chrome.storage.local.set({ context: "" }, () => {
       contextInput.value = "";
       currentContext.textContent = "(none saved)";
-      list.innerHTML = "";
+      console.log("Context cleared");
     });
   });
 
@@ -67,16 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const context = contextInput.value.trim();
     chrome.storage.local.set({ context }, () => {
       currentContext.textContent = context || "(none saved)";
+      console.log("Context saved:", context);
     });
   }
-
-
-
-  li.addEventListener("click", () => {
-  // set a one-time skip flag
-  chrome.storage.local.set({ skipContextOnce: true }, () => {
-    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(item.rawQuery)}`;
-    chrome.tabs.create({ url: searchUrl });
-  });
-});
 });
