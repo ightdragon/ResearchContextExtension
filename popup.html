@@ -5,16 +5,21 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h2>Search Context</h2>
-  <textarea id="contextInput" placeholder="Enter context here..."></textarea>
-  <button id="saveContext">Save Context</button>
-  <button id="clearContext">Clear</button>
-
-  <h3>Current Context</h3>
+  <h2>Current Context</h2>
   <p id="currentContext">(none saved)</p>
 
-  <h3>Saved Queries</h3>
-  <ul id="queryList"></ul>
+  <h3>Search Context</h3>
+  <textarea id="contextInput" placeholder="Write your interests here..."></textarea>
+<div>
+  <input type="checkbox" id="strongContext">
+  <label for="strongContext">Strong match (using quotes)</label>
+</div>
+<button id="saveContext">Save Context</button>
+<button id="clearContext">Clear Context</button>
+
+<h3>Saved Queries</h3>
+<ul id="queryList"></ul>
+
 
   <script src="popup.js"></script>
 </body>

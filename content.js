@@ -1,5 +1,6 @@
 chrome.storage.local.get({ context: "" }, (data) => {
-  /*if (data.context) {
+  if (data.context) {
+    /*
     const banner = document.createElement("div");
     banner.innerHTML = `
       <span style="font-weight:bold;">Context:</span> ${data.context}
@@ -8,7 +9,8 @@ chrome.storage.local.get({ context: "" }, (data) => {
                border:none; border-radius:4px; cursor:pointer;">
         ✕
       </button>
-    `;*/
+    `;
+    
 
     banner.style.cssText = `
       position: sticky;
@@ -22,7 +24,7 @@ chrome.storage.local.get({ context: "" }, (data) => {
       font-weight: normal;
       border-bottom: 2px solid #000000ff;
     `;
-
+      
     document.body.prepend(banner);
 
     document.getElementById("dismissContextBanner").addEventListener("click", () => {
@@ -32,5 +34,8 @@ chrome.storage.local.get({ context: "" }, (data) => {
         currentContext.textContent = "(none saved)";
       });
     });
+  }
+});
+    */
   }
 });

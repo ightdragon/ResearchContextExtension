@@ -17,14 +17,15 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
       if (!query) return;
 
       chrome.storage.local.get({ skipContextOnce: false }, (flags) => {
-        if (flags.skipContextOnce) {
-          // skip just this one
-          chrome.storage.local.set({ skipContextOnce: false });
-          return;
-        }
+  if (flags.skipContextOnce) {
+    // ✅ reset the flag immediately
+    chrome.storage.local.set({ skipContextOnce: false });
+    return; // don't process this query
+  }
 
-        handleQuery(query, false, details.tabId);
-      });
+  handleQuery(query, false, details.tabId);
+});
+
     }
   } catch (e) {
     console.error("Navigation interception failed:", e);
@@ -35,12 +36,17 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
 // Core query handler
 function handleQuery(query, forceAppend = false, tabId = null) {
   console.log("handleQuery called with query:", query);
-  chrome.storage.local.get({ context: "", queries: [] }, (data) => {
-    const context = (data.context || "").trim();
+  chrome.storage.local.get({ context: "", queries: [], strong: false }, (data) => {
+    let context = (data.context || "").trim();
     let modifiedQuery = query;
 
+    // If strong is enabled, wrap context in quotes
+    if (context && data.strong) {
+      context = `"${context}"`;
+    }
+
     if (context) {
-      if (forceAppend || !query.toLowerCase().includes(context.toLowerCase())) {
+      if (forceAppend || !query.toLowerCase().includes(context.toLowerCase().replace(/"/g, ""))) {
         modifiedQuery = `${query} ${context}`;
       }
     }
@@ -71,20 +77,21 @@ function handleQuery(query, forceAppend = false, tabId = null) {
       }
 
       chrome.storage.local.set({ queries }, () => {
-        console.log("History updated. Total items:", queries.length);
-
         console.log("Saved query:", newEntry.fullQuery);
       });
     }
 
     // Redirect if query was modified
     if (modifiedQuery !== query) {
-      const newUrl = `https://www.google.com/search?q=${encodeURIComponent(modifiedQuery)}`;
-      if (tabId) {
-        chrome.tabs.update(tabId, { url: newUrl });
-      } else {
-        chrome.tabs.create({ url: newUrl });
-      }
+  // ✅ set flag so we don't reprocess the modified query
+  chrome.storage.local.set({ skipContextOnce: true }, () => {
+    const newUrl = `https://www.google.com/search?q=${encodeURIComponent(modifiedQuery)}`;
+    if (tabId) {
+      chrome.tabs.update(tabId, { url: newUrl });
+    } else {
+      chrome.tabs.create({ url: newUrl });
     }
+  });
+}
   });
 }

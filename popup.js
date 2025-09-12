@@ -6,11 +6,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveButton = document.getElementById("saveContext");
   const clearButton = document.getElementById("clearContext");
   const currentContext = document.getElementById("currentContext");
+    const adminClearButton = document.getElementById("adminClearHistory");
+    const strongContextCheckbox = document.getElementById("strongContext");
 
   function loadData() {
-    chrome.storage.local.get({ context: "", queries: [] }, (data) => {
-      contextInput.value = data.context || "";
-      currentContext.textContent = data.context || "(none saved)";
+      chrome.storage.local.get({ context: "", queries: [], strong: false }, (data) => {
+        contextInput.value = data.context || "";
+        currentContext.textContent = data.context || "(none saved)";
+        document.getElementById("strongContext").checked = data.strong || false;
       console.log("Loaded context:", data.context);
       console.log("Loaded queries:", data.queries);
 
@@ -19,28 +22,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Show newest first
       [...data.queries].reverse().forEach((item) => {
-  const li = document.createElement("li");
+      const li = document.createElement("li");
 
-  // inner wrapper for query + timestamp
-  const querySpan = document.createElement("span");
-  querySpan.className = "history-query";
-  querySpan.textContent = item.fullQuery;
+      // inner wrapper for query + timestamp
+      const querySpan = document.createElement("span");
+      querySpan.className = "history-query";
+      querySpan.textContent = item.fullQuery;
 
-  const tsSpan = document.createElement("span");
-  tsSpan.className = "history-timestamp";
-  tsSpan.textContent = item.timestamp;
+      const tsSpan = document.createElement("span");
+      tsSpan.className = "history-timestamp";
+      tsSpan.textContent = item.timestamp;
 
-  const deleteBtn = document.createElement("button");
-  deleteBtn.className = "delete-history";
-  deleteBtn.innerHTML = "&times;";
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "delete-history";
+      deleteBtn.innerHTML = "&times;";
 
-  // ✅ Clicking the li (anywhere except delete button) re-runs query
-  li.addEventListener("click", () => {
-    chrome.storage.local.set({ skipContextOnce: true }, () => {
-      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(item.fullQuery)}`;
-      chrome.tabs.create({ url: searchUrl });
-    });
-  });
+      // ✅ Clicking the li (anywhere except delete button) re-runs query
+        li.addEventListener("click", () => {
+          chrome.storage.local.get({ strong: false }, (store) => {
+            let queryToSearch = item.fullQuery;
+            if (store.strong) {
+              queryToSearch = `${queryToSearch}`;
+            }
+            chrome.storage.local.set({ skipContextOnce: true }, () => {
+              const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(queryToSearch)}`;
+              chrome.tabs.create({ url: searchUrl });
+            });
+          });
+        });
 
   // ✅ Delete button removes entry without triggering li click
   deleteBtn.addEventListener("click", (e) => {
@@ -76,6 +85,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // Save context button
   saveButton.addEventListener("click", saveContext);
 
+    // Save strong match immediately when checkbox is toggled
+    strongContextCheckbox.addEventListener("change", () => {
+      const strong = strongContextCheckbox.checked;
+      chrome.storage.local.set({ strong }, () => {
+        console.log("Strong match updated:", strong);
+      });
+    });
+
   // Clear only context
   clearButton.addEventListener("click", () => {
     chrome.storage.local.set({ context: "" }, () => {
@@ -85,11 +102,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+
   function saveContext() {
-    const context = contextInput.value.trim();
-    chrome.storage.local.set({ context }, () => {
-      currentContext.textContent = context || "(none saved)";
-      console.log("Context saved:", context);
-    });
+      let context = contextInput.value.trim();
+      const strong = document.getElementById("strongContext").checked;
+      chrome.storage.local.set({ context, strong }, () => {
+        currentContext.textContent = context || "(none saved)";
+        console.log("Context saved:", {context, strong});
+      });
   }
 });
