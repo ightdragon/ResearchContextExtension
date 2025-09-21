@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("Popup loaded ✅");
 
   const list = document.getElementById("queryList");
   const contextInput = document.getElementById("contextInput");
@@ -11,11 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function loadData() {
       chrome.storage.local.get({ context: "", queries: [], strong: false }, (data) => {
-        contextInput.value = data.context || "";
-        currentContext.textContent = data.context || "(none saved)";
+  contextInput.value = data.context || "";
+  currentContext.textContent = data.context || "";
         document.getElementById("strongContext").checked = data.strong || false;
-      console.log("Loaded context:", data.context);
-      console.log("Loaded queries:", data.queries);
+    // loaded data
 
       // Clear history before re-render
       list.innerHTML = "";
@@ -89,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
     strongContextCheckbox.addEventListener("change", () => {
       const strong = strongContextCheckbox.checked;
       chrome.storage.local.set({ strong }, () => {
-        console.log("Strong match updated:", strong);
       });
     });
 
@@ -97,8 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
   clearButton.addEventListener("click", () => {
     chrome.storage.local.set({ context: "" }, () => {
       contextInput.value = "";
-      currentContext.textContent = "(none saved)";
-      console.log("Context cleared");
+  currentContext.textContent = "";
     });
   });
 
@@ -107,8 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let context = contextInput.value.trim();
       const strong = document.getElementById("strongContext").checked;
       chrome.storage.local.set({ context, strong }, () => {
-        currentContext.textContent = context || "(none saved)";
-        console.log("Context saved:", {context, strong});
+  currentContext.textContent = context || "";
       });
   }
 });

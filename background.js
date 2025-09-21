@@ -35,7 +35,6 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
 
 // Core query handler
 function handleQuery(query, forceAppend = false, tabId = null) {
-  console.log("handleQuery called with query:", query);
   chrome.storage.local.get({ context: "", queries: [], strong: false }, (data) => {
     let context = (data.context || "").trim();
     let modifiedQuery = query;
@@ -67,7 +66,6 @@ function handleQuery(query, forceAppend = false, tabId = null) {
 
     // Prevent duplicate consecutive entries
     if (queries.length === 0 || queries[queries.length - 1].fullQuery !== newEntry.fullQuery) {
-      console.log("Saving to history:", newEntry);
 
       queries.push(newEntry);
 
@@ -77,7 +75,6 @@ function handleQuery(query, forceAppend = false, tabId = null) {
       }
 
       chrome.storage.local.set({ queries }, () => {
-        console.log("Saved query:", newEntry.fullQuery);
       });
     }
 
